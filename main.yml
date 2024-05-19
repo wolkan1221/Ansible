@@ -1,0 +1,91 @@
+- name: Configure app servers
+  hosts: app
+  become: yes
+  tasks:
+    - name: Ensure required packages are installed (Ubuntu)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Add Docker GPG key (Ubuntu)
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Add Docker repository (Ubuntu)
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Install Docker (Ubuntu)
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Start Docker service (Ubuntu)
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Ensure required packages are installed (CentOS)
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+      when: ansible_distribution == 'CentOS'
+
+    - name: Add Docker repository (CentOS)
+      command: >
+        yum-config-manager --add-repo
+        https://download.docker.com/linux/centos/docker-ce.repo
+      when: ansible_distribution == 'CentOS'
+
+    - name: Install Docker (CentOS)
+      yum:
+        name: docker-ce
+        state: present
+      when: ansible_distribution == 'CentOS'
+
+    - name: Start Docker service (CentOS)
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      when: ansible_distribution == 'CentOS'
+
+- name: Configure database servers
+  hosts: database
+  become: yes
+  tasks:
+    - name: Install PostgreSQL repository (Ubuntu)
+      apt:
+        name: "postgresql-{{ postgresql_version }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Install PostgreSQL server (Ubuntu)
+      apt:
+        name: "postgresql-server-dev-{{ postgresql_version }}"
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Start PostgreSQL service (Ubuntu)
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+      when: ansible_distribution == 'Ubuntu'

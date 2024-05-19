@@ -1,0 +1,13 @@
+[app]
+vm-2
+vm-3
+
+[database]
+vm-1
+
+[database:vars]
+postgresql_version=12
+postgresql_data_dir=/var/lib/postgresql/12/main
+
+[web]
+vm-1
